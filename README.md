@@ -1,7 +1,14 @@
-## Quiz Pdf Project
 
-This project is a simple quiz project that reads questions from a file and asks them to the user. The user can answer the questions and at the end of the quiz, the user can see the score.
+# Quiz PDF &  AI Web Uygulaması
 
+Sakarya Üniversitesi / Bilgisayar Mühendisliği Bölümü bitirme projesi reposudur.
+
+# Katkıda Bulunanlar
 
 İsmail Emir Lambacıoğlu
+
 Tarık Yeşilyurt
+
+## Kullanılan Teknolojiler
+
+HTML, CSS, JavaScript, React NextJS.
