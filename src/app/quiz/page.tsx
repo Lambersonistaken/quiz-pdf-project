@@ -4,6 +4,7 @@ import {useState} from 'react';
 import ProgressBar from '@/components/progressBar';
 import {ChevronLeft, X} from "lucide-react";
 import ResultCard from "./ResultCard";
+import QuizSubmission from './QuizSubmission';
 
 
 const questions = [
@@ -44,6 +45,7 @@ export default function Home() {
     const [score, setScore] = useState<number>(0);
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean|null>(null);
+    const [submitted, setSubmitted] = useState<boolean>(false);
 
 
 
@@ -57,7 +59,9 @@ export default function Home() {
         if(currentQuestion < questions.length - 1)
         {
             setCurrentQuestion(currentQuestion + 1);
-            
+        } else {
+            setSubmitted(true);
+            return;
         }
 
         setSelectedAnswer(null);
@@ -78,6 +82,15 @@ export default function Home() {
     }
 
 
+    const scorePercentage: number = Math.round((score / questions.length) * 100);
+
+    if(submitted){
+        return (
+            <QuizSubmission score={score} scorePercentage={scorePercentage} totalQuestions={questions.length}/>
+        )
+    }
+
+
   return (
     <div className='flex flex-col flex-1'>
       <div className='position-sticky top-0 z-10 shadow-md py-4 w-full'>
@@ -93,16 +106,23 @@ export default function Home() {
         <div>
             <h2 className='text-3xl font-bold'>{questions[currentQuestion].questionText}</h2>
             <div className='grid grid-cols-1 gap-6 mt-6'>
-                {questions[currentQuestion].answers.map((answer) => (
-                    <Button variant={"secondary"} key={answer.id} onClick={() => handleAnswer(answer)} className='p-4 rounded-md shadow-md'>{answer.answerText}</Button>
-                ))}
+                {
+                questions[currentQuestion].answers.map((answer) => {
+                    const variant = selectedAnswer === answer.id ? (answer.isCorrect ? "secondary" : "destructive") : "default";
+                    return (
+                        <Button variant={variant} key={answer.id} onClick={() => handleAnswer(answer)} className='p-4 rounded-md shadow-md'>{answer.answerText}</Button>
+                    )
+                }
+                    
+                )
+                }
             </div>
         </div>
       )}
     </main>
     <footer className='footer pb-9 px-6 relative mb-0'>
         <ResultCard isCorrect={isCorrect} correctAnswer={questions[currentQuestion].answers.find(answer => answer.isCorrect === true)?.answerText}/>
-      <Button onClick={handleNext}>{!started ? "Start" : "Next"}</Button>
+      <Button variant="neo" size="lg" onClick={handleNext}>{!started ? "Start" :(currentQuestion === questions.length -1) ?"Submit" :  "Next"}</Button>
     </footer>
     </div>
     
