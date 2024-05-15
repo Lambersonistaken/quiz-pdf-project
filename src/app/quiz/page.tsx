@@ -1,6 +1,7 @@
 "use client"
 import {Button} from '@/components/ui/button';
 import {useState} from 'react';
+import ProgressBar from '@/components/progressBar';
 
 
 const questions = [
@@ -57,6 +58,11 @@ export default function Home() {
 
   return (
     <div className='flex flex-col flex-1'>
+      <div className='position-sticky top-0 z-10 shadow-md py-4 w-full'>
+        <header>
+            <ProgressBar value={(currentQuestion + 1) / questions.length * 100} />
+        </header>
+      </div>
       <main className="flex min-h-screen justify-center flex-1">
       {!started ? <h1 className="text-6xl font-bold">This is our Quiz Page👋</h1> : (
         <div>
