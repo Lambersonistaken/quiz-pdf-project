@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import {HumanMessage} from "@langchain/core/messages";
 import {ChatOpenAI} from "@langchain/openai"  
 import{PDFLoader} from "langchain/document_loaders/fs/pdf"
+import {JsonOutputFunctionsParser} from "langchain/output_parsers"
+import { desc } from "drizzle-orm";
 
 
 export async function POST(req: NextRequest) {
@@ -19,10 +21,60 @@ export async function POST(req: NextRequest) {
 
         const prompt =  "given the text which is a summary of the document, generate a quiz based on the text. Return json only that contains a quiz object with fields: name, description and questions. The questions is an array of objects with fields: questionText, answers. The answers is an array of objects with fields: answerText, isCorrect."
          
+
+
+
         const model = new ChatOpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
+            openAIApiKey: process.env.OPENAI_API_KEY,
             modelName: "gpt-4-1106-preview",
         });
+
+        const parser = new JsonOutputFunctionsParser();
+        const extractionFunctionSchema = {
+            name:"extractor",
+            description: "extracts fields from the output",
+            parameters: {
+                type: "object",
+                properties: {
+                    quiz:{
+                        type: "object",
+                        properties: {
+                            name: {type: "string"},
+                            description: {type: "string"},
+                            questions: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        questionText: {type: "string"},
+                                        answers: {
+                                            type: "array",
+                                            items: {
+                                                type: "object",
+                                                properties: {
+                                                    answerText: {type: "string"},
+                                                    isCorrect: {type: "boolean"}
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        
+                        }
+                    }
+                }
+                
+            }
+        }
+
+
+        const runnable = model.bind({
+            functions: [extractionFunctionSchema],
+            function_call: {name: "extractor"},
+        })
+        .pipe(parser);
+
 
         const message = new HumanMessage({
             content: [
@@ -33,7 +85,7 @@ export async function POST(req: NextRequest) {
             ]
         });
 
-        const result = await model.invoke([message]);
+        const result = await runnable.invoke([message]);
         console.log(result);
 
         return NextResponse.json({message: "created successfully"}, {status: 200});
