@@ -4,7 +4,7 @@ import {ChatOpenAI} from "@langchain/openai"
 import{PDFLoader} from "langchain/document_loaders/fs/pdf"
 import {JsonOutputFunctionsParser} from "langchain/output_parsers"
 import { desc } from "drizzle-orm";
-
+import saveQuiz from "./saveToDb";
 
 export async function POST(req: NextRequest) {
     const body = await req.formData();
@@ -88,7 +88,9 @@ export async function POST(req: NextRequest) {
         const result = await runnable.invoke([message]);
         console.log(result);
 
-        return NextResponse.json({message: "created successfully"}, {status: 200});
+        const {quizId} = await saveQuiz(result.quiz);
+
+        return NextResponse.json({quizId}, {status: 200});
 
 } catch(e:any ) {
         return NextResponse.json({message: e.message}, {status: 500});
